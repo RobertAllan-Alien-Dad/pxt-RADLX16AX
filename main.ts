@@ -1,27 +1,50 @@
 /*
  microbot package
 */
- //% weight=10 icon="\uf013" color=#2896ff
+//% weight=10 icon="\uf013" color=#2896ff
 namespace microbot {
-
     export enum Servos {
-		S1 = 0x01,
-		S2 = 0x02,
-		S3 = 0x03,
-		S4 = 0x04,
-		S5 = 0x05,
-		S6 = 0x06,
-		S7 = 0x07,
-		S8 = 0x08
-	}
-	
+        S1 = 0x01,
+        S2 = 0x02,
+        S3 = 0x03,
+        S4 = 0x04,
+        S5 = 0x05,
+        S6 = 0x06,
+        S7 = 0x07,
+        S8 = 0x08,
+        S9 = 0x09,
+        S10 = 0x0A,
+        S11 = 0x0B,
+        S12 = 0x0C,
+        S13 = 0x0D,
+        S14 = 0x0E,
+        S15 = 0x0F,
+        S16 = 0x10,
+        S17 = 0x11,
+        S18 = 0x12,
+        S19 = 0x13,
+        S20 = 0x14,
+        S21 = 0x15,
+        S22 = 0x16,
+        S23 = 0x17,
+        S24 = 0x18,
+        S25 = 0x19,
+        S26 = 0x1A,
+        S27 = 0x1B,
+        S28 = 0x1C,
+        S29 = 0x1D,
+        S30 = 0x1E,
+        S31 = 0x1F,
+        S32 = 0x20
+    }
+
     export enum Colors {
         //% blockId="Red" block="Red"
         Red = 0x01,
         //% blockId="Green" block="Green"
         Green = 0x02,
         //% blockId="Blue" block="Blue"
-		Blue = 0x03,
+        Blue = 0x03
     }
 
     export enum Lights {
@@ -31,13 +54,6 @@ namespace microbot {
         Light2 = 0x01
     }
 
-    export enum SendType {
-        //% block="Set immediately"
-        NoDelaySend = 0x00,
-        //% block="Set delay"
-        DelaySend = 0x01
-    }
-    
     export enum LineFollower {
         //% blockId="S1_OUT_S2_OUT" block="Sensor1 and sensor2 are out black line"
         S1_OUT_S2_OUT = 0x00,
@@ -47,6 +63,34 @@ namespace microbot {
         S1_IN_S2_OUT = 0x02,
         //% blockId="S1_IN_S2_IN" block="Sensor1 and sensor2 are in black line "
         S1_IN_S2_IN = 0x03
+    }
+
+    export enum Layer {
+        //% block="Layer 1"
+        LAYER_1 = 0x00,
+        //% block="Layer 2"
+        LAYER_2 = 0x01,
+        //% block="Layer 3"
+        LAYER_3 = 0x02,
+        //% block="Layer 4"
+        LAYER_4 = 0x03
+    }
+
+    export enum ReleaseAngle {
+        //% block="angle 0"
+        ANGLE_0 = 0,
+        //% block="angle 30"
+        ANGLE_30 = 30,
+        //% block="angle 60"
+        ANGLE_60 = 60,
+        //% block="angle 90"
+        ANGLE_90 = 90,
+        //% block="angle 120"
+        ANGLE_120 = 120,
+        //% block="angle 150"
+        ANGLE_150 = 150,
+        //% block="angle 180"
+        ANGLE_180 = 180
     }
 
     export enum CmdType {
@@ -93,153 +137,408 @@ namespace microbot {
         COMMAND_ERRO
     }
 
+    export enum KeyStatusType {
+        //% block="normal"
+        NORMAL,
+        //% block="press"
+        PRESS,
+        //% block="hold"
+        HOLD,
+        //% block="release"
+        RELEASE
+    }
+
+
+    export enum HandleButton {
+        //% block="Touch key"
+        TOUCHKEY = EventBusValue.MES_DPAD_BUTTON_1_DOWN,
+        //% block="B1"
+        B1 = EventBusValue.MES_DPAD_BUTTON_2_DOWN,
+        //% block="B2"
+        B2 = EventBusValue.MES_DPAD_BUTTON_3_DOWN,
+        //% block="B3"
+        B3 = EventBusValue.MES_DPAD_BUTTON_4_DOWN,
+        //% block="B4"
+        B4 = EventBusValue.MES_DPAD_BUTTON_A_DOWN,
+        //% block="Left joystick"
+        JOYSTICK1 = EventBusValue.MES_DPAD_BUTTON_B_DOWN,
+        //% block="Right joystick"
+        JOYSTICK2 = EventBusValue.MES_DPAD_BUTTON_C_DOWN
+    }
+
+
+    export enum HandleSensorValue {
+        //% block="Sound"
+        SOUND,
+        //% block="Light"
+        LIGHT,
+        //% block="Power"
+        POWER,
+        //% block="Left joystick X"
+        JOYSTICK_X1,
+        //% block="Left joystick Y"
+        JOYSTICK_Y1,
+        //% block="Right joystick X"
+        JOYSTICK_X2,
+        //% block="Right joystick Y"
+        JOYSTICK_Y2,
+        //% block="Ultrasonic"
+        ULTRASONIC,
+        //% block="konb"
+        KNOB
+    }
+
 
     let lhRGBLight: RGBLight.LHRGBLight;
-	let R_F: number;
-	let r_f: number;
-	
-	let g_f: number;
-	let G_F: number;
+    let R_F: number;
+    let r_f: number;
 
-	let b_f: number;
-	let B_F: number;
+    let g_f: number;
+    let G_F: number;
+
+    let b_f: number;
+    let B_F: number;
+
+    let handleCmd: string = "";
+    let versionFlag: boolean = false;
+    let readTimes = 0;
 
 	/**
    * Microbot board initialization, please execute at boot time
   */
-  //% weight=100 blockId=microbotInit block="Initialize Microbot"
-  export function microbotInit() {
-	serial.redirect(
-   SerialPin.P12,
-   SerialPin.P8,
-   BaudRate.BaudRate9600);
-      initRGBLight();   
-      initColorSensor();
-}
+    //% weight=100 blockId=microbotInit block="Initialize Microbot"
+    export function microbotInit() {
+        initRGBLight();
+        initColorSensor();
+        serial.redirect(
+            SerialPin.P12,
+            SerialPin.P8,
+            BaudRate.BaudRate115200);
+        //basic.forever(() => {
+        //    if (readTimes < 5 && !versionFlag)
+        //        getHandleCmd();
+        //});
+        //while (readTimes < 5 && !versionFlag) {
+        //    readTimes++;
+        //    sendVersionCmd();
+        //    basic.pause(30)
+        //}
+    }
 
-/**
-* Set the angle of servo 1 to 8, range of 0~180 degree
-*/
-//% weight=98 blockId=setServo block="Set servo|index %index|angle %angle|duration %duration"
-//% angle.min=0 angle.max=180
+    function sendVersionCmd() {
+        let buf = pins.createBuffer(4);
+        buf[0] = 0x55;
+        buf[1] = 0x55;
+        buf[2] = 0x02;
+        buf[3] = 0x12;//cmd type
+        serial.writeBuffer(buf);
+    }
+
+
+    /**
+    * Get the handle command.
+    */
+
+    function getHandleCmd() {
+        let charStr: string = serial.readString();
+        handleCmd = handleCmd.concat(charStr);
+        let cnt: number = countChar(handleCmd, "$");
+        if (cnt > 0 && handleCmd.charAt(0).compare("V") == 0) {
+            versionFlag = true;
+        }
+    }
+
+
+    function countChar(src: string, strFind: string): number {
+        let cnt: number = 0;
+        for (let i = 0; i < src.length; i++) {
+            if (src.charAt(i).compare(strFind) == 0) {
+                cnt++;
+            }
+        }
+        return cnt;
+    }
+
+    /**
+    * Set the angle of servo 1 to 8, range of 0~180 degree
+    */
+    //% weight=98 blockId=setServo block="Set servo|index %index|angle %angle|duration %duration"
+    //% angle.min=0 angle.max=180
     export function setServo(index: number, angle: number, duration: number) {
-        if (angle > 180 || angle < 0)
-        {
-            return; 
-        }    
+        if (angle > 180 || angle < 0) {
+            return;
+        }
         let position = mapRGB(angle, 0, 180, 500, 2500);
-       
-	   let buf = pins.createBuffer(10);
-	   buf[0] = 0x55;
-	   buf[1] = 0x55;
-	   buf[2] = 0x08;
-	   buf[3] = 0x03;//cmd type
-	   buf[4] = 0x01;
-	   buf[5] = duration & 0xff;
-	   buf[6] = (duration >> 8) & 0xff;
-	   buf[7] = index;
-	   buf[8] = position & 0xff;
-	   buf[9] = (position >> 8) & 0xff;
-	   serial.writeBuffer(buf);
-}
 
-/**
-*	Set the speed of the number 1 motor and number 2 motor, range of -100~100, that can control the tank to go advance or turn of.
-*/
-//% weight=96 blockGap=50 blockId=setMotor block="Set motor1 speed|%speed1|and motor2|speed %speed2"
-//% speed1.min=-100 speed1.max=100
-//% speed2.min=-100 speed2.max=100
+        let buf = pins.createBuffer(10);
+        buf[0] = 0x55;
+        buf[1] = 0x55;
+        buf[2] = 0x08;
+        buf[3] = 0x03;//cmd type
+        buf[4] = 0x01;
+        buf[5] = duration & 0xff;
+        buf[6] = (duration >> 8) & 0xff;
+        buf[7] = index;
+        buf[8] = position & 0xff;
+        buf[9] = (position >> 8) & 0xff;
+        serial.writeBuffer(buf);
+    }
+
+
+    /**
+    * Set the angle of bus servo 1 to 8, range of 0~240 degree
+    */
+    //% weight=97 blockId=setBusServo block="Set bus servo|index %index|angle %angle|duration %duration"
+    //% angle.min=0 angle.max=240
+    export function setBusServo(index: number, angle: number, duration: number) {
+        if (angle > 240 || angle < 0) {
+            return;
+        }
+        let position = mapRGB(angle, 0, 240, 0, 1000);
+
+        let buf = pins.createBuffer(10);
+        buf[0] = 0x55;
+        buf[1] = 0x55;
+        buf[2] = 0x08;
+        buf[3] = 0x35;//cmd type
+        buf[4] = 0x01;
+        buf[5] = duration & 0xff;
+        buf[6] = (duration >> 8) & 0xff;
+        buf[7] = index;
+        buf[8] = position & 0xff;
+        buf[9] = (position >> 8) & 0xff;
+        serial.writeBuffer(buf);
+    }
+
+    /**
+    *	Set the speed of the number 1 motor and number 2 motor, range of -100~100, that can control the tank to go advance or turn of.
+    */
+    //% weight=96 blockGap=50 blockId=setMotor block="Set motor1 speed|%speed1|and motor2|speed %speed2"
+    //% speed1.min=-100 speed1.max=100
+    //% speed2.min=-100 speed2.max=100
     export function setMotorSpeed(speed1: number, speed2: number) {
         if (speed1 > 100 || speed1 < -100 || speed2 > 100 || speed2 < -100) {
             return;
         }
-        speed1 = speed1 * -1;
-        speed2 = speed2 * -1;
-   let buf = pins.createBuffer(6);
-   buf[0] = 0x55;
-   buf[1] = 0x55;
-   buf[2] = 0x04;
-   buf[3] = 0x32;//cmd type
-   buf[4] = speed1;
-   buf[5] = speed2;
-   serial.writeBuffer(buf);
-}
-    
+        let speedOne = speed1;
+        let speedTwo = speed2;
+        if (versionFlag) {
+            speedOne = speed1 * -1;
+            speedTwo = speed2 * -1;
+        }
+        else {
+            speedOne = speed2 * -1;
+            speedTwo = speed1 * -1;
+        }
+        let buf = pins.createBuffer(6);
+        buf[0] = 0x55;
+        buf[1] = 0x55;
+        buf[2] = 0x04;
+        buf[3] = 0x32;//cmd type
+        buf[4] = speedOne;
+        buf[5] = speedTwo;
+        serial.writeBuffer(buf);
+    }
 
-/**
-*  Obtain the distance of ultrasonic detection to the obstacle
-*/
-//% weight=94 blockId=Ultrasonic block="Ultrasonic distance(cm)"
-   export function Ultrasonic(): number {
-	   //init pins
-   let echoPin:DigitalPin = DigitalPin.P13;
-   let trigPin:DigitalPin = DigitalPin.P14;
-   pins.setPull(echoPin, PinPullMode.PullNone);
-   pins.setPull(trigPin, PinPullMode.PullNone);
-		   
-   // send pulse
-   pins.digitalWritePin(trigPin, 0);
-   control.waitMicros(2);
-   pins.digitalWritePin(trigPin, 1);
-   control.waitMicros(10);
-   pins.digitalWritePin(trigPin, 0);
-   control.waitMicros(2);
-   // read pulse
-   let d = pins.pulseIn(echoPin, PulseValue.High, 11600);
-   return d / 58;
-   }
 
-/**
-* Get the volume level detected by the sound sensor, range 0 to 255
-*/
-//% weight=92 blockId=Sound block="Sound volume"
-	export function getSoundVolume(): number {
+    /**
+    *  Obtain the distance of ultrasonic detection to the obstacle
+    */
+    //% weight=94 blockId=Ultrasonic block="Ultrasonic distance(cm)"
+    export function Ultrasonic(): number {
+        //init pins
+        let echoPin: DigitalPin = DigitalPin.P13;
+        let trigPin: DigitalPin = DigitalPin.P14;
+        pins.setPull(echoPin, PinPullMode.PullNone);
+        pins.setPull(trigPin, PinPullMode.PullNone);
+
+        // send pulse
+        pins.digitalWritePin(trigPin, 0);
+        control.waitMicros(5);
+        pins.digitalWritePin(trigPin, 1);
+        control.waitMicros(10);
+        pins.digitalWritePin(trigPin, 0);
+        control.waitMicros(5);
+        // read pulse
+        let d = pins.pulseIn(echoPin, PulseValue.High, 11600);
+        basic.pause(10);
+        return d / 36;
+    }
+
+    function UltrasonicMs(): number {
+        //init pins
+        let echoPin: DigitalPin = DigitalPin.P13;
+        let trigPin: DigitalPin = DigitalPin.P14;
+        pins.setPull(echoPin, PinPullMode.PullNone);
+        pins.setPull(trigPin, PinPullMode.PullNone);
+
+        // send pulse
+        pins.digitalWritePin(trigPin, 0);
+        control.waitMicros(5);
+        pins.digitalWritePin(trigPin, 1);
+        control.waitMicros(10);
+        pins.digitalWritePin(trigPin, 0);
+        control.waitMicros(5);
+        // read pulse
+        let d = pins.pulseIn(echoPin, PulseValue.High, 11600);
+        basic.pause(10);
+        return d * 10 / 38;
+    }
+
+    /**
+    *  Send ultrasonic distance to control board
+    */
+    //% weight=93 blockId=UltrasonicSend block="Send ultrasonic distance to control board"
+    function UltrasonicSend() {
+        let distance = UltrasonicMs();
+        let buf = pins.createBuffer(6);
+        buf[0] = 0x55;
+        buf[1] = 0x55;
+        buf[2] = 0x04;
+        buf[3] = 0x33;//cmd type
+        buf[4] = distance & 0xff;
+        buf[5] = (distance >> 8) & 0xff;
+        serial.writeBuffer(buf);
+    }
+
+    /**
+    * Get the volume level detected by the sound sensor, range 0 to 255
+    */
+    //% weight=92 blockId=Sound block="Sound volume"
+    export function getSoundVolume(): number {
         let volume = pins.analogReadPin(AnalogPin.P1);
         volume = mapRGB(volume, 0, 1023, 0, 255);
-  	    return volume;
-	}	
-	
+        return volume;
+    }
+
     /**
      * Obtain the condition of the tracking sensor
      */
-    //% weight=90 blockGap=50 blockId=readLineStatus block="Line follower status |%status|"
+    //% weight=91 blockGap=50  blockId=readLineStatus block="Line follower status |%status|"
     export function readLineFollowerStatus(status: LineFollower): boolean {
         let s1 = pins.digitalReadPin(DigitalPin.P2);
         let s2 = pins.digitalReadPin(DigitalPin.P16);
         let s = ((1 & s1) << 1) | s2;
-        if (s == status)
-        {
+        if (s == status) {
             return true;
-        }    
-        else
-        {
+        }
+        else {
             return false;
-        }     
+        }
+    }
+
+    /**
+  * Robot arm grab is ready
+  */
+    //% weight=90 blockId=grapReady block="Robot arm grab is ready"
+    export function grapReady() {
+        let buf = pins.createBuffer(5);
+        buf[0] = 0x55;
+        buf[1] = 0x55;
+        buf[2] = 0x03;
+        buf[3] = 0x5A;//cmd type
+        buf[4] = 0x02;
+        serial.writeBuffer(buf);
+    }
+
+
+    /**
+   * Robot arm grab something
+   */
+    //% weight=89 blockId=grapObject block="Robot arm grab|angle %angle| at |layer %layer|"
+    //% angle.min=0 angle.max=240
+    //% layer.min=0 layer.max=3 
+    export function grapObject(angle: number, layer: number) {
+        let distance = UltrasonicMs();
+        if (angle > 240 || angle < 0) {
+            return;
+        }
+        let position = mapRGB(angle, 0, 240, 0, 1000);
+        position += 125;
+        if (position > 1000) {
+            position = 1000;
+        }
+        let buf = pins.createBuffer(10);
+        buf[0] = 0x55;
+        buf[1] = 0x55;
+        buf[2] = 0x08;
+        buf[3] = 0x5A;//cmd type
+        buf[4] = 0x00;
+        buf[5] = distance & 0xff;
+        buf[6] = (distance >> 8) & 0xff;
+        buf[7] = position & 0xff;
+        buf[8] = (position >> 8) & 0xff;
+        buf[9] = layer & 0xff;
+        serial.writeBuffer(buf);
+    }
+
+    /**
+     *  Robot arm release something
+     */
+    //% weight=88  blockId=releaseObject block="Robot arm release|distance(Cm) %distance|angle %angle|at|layer %layer|"
+    //% angle.min=0 angle.max=240
+    //% layer.min=0 layer.max=3  
+    export function releaseObject(distance: number, angle: number, layer: number) {
+        if (angle > 240 || angle < 0) {
+            return;
+        }
+        let position = mapRGB(angle, 0, 240, 0, 1000);
+        position += 125;
+        if (position > 1000) {
+            position = 1000;
+        }
+        let buf = pins.createBuffer(10);
+        buf[0] = 0x55;
+        buf[1] = 0x55;
+        buf[2] = 0x08;
+        buf[3] = 0x5A;//cmd type
+        buf[4] = 0x01;
+        buf[5] = distance & 0xff;
+        buf[6] = (distance >> 8) & 0xff;
+        buf[7] = position & 0xff;
+        buf[8] = (position >> 8) & 0xff;
+        buf[9] = layer & 0xff;
+        serial.writeBuffer(buf);
+    }
+
+    /**
+* Control the robot arm draw string
+*/
+    //% weight=87 blockGap=50 blockId=robotArmDrawString block="Robot arm draw %str"
+    export function robotArmDrawString(str: string) {
+        let buf = pins.createBuffer(str.length + 5);
+        buf[0] = 0x55;
+        buf[1] = 0x55;
+        buf[2] = (str.length + 3) & 0xff;
+        buf[3] = 0x57;//cmd type
+        buf[4] = str.length & 0xff;
+        for (let i = 0; i < str.length; i++) {
+            buf[5 + i] = str.charCodeAt(i);
+        }
+        serial.writeBuffer(buf);
     }
 
     /**
 	 * Initialize RGB
 	 */
-	function initRGBLight() {
-		if (!lhRGBLight) {
-			lhRGBLight = RGBLight.create(DigitalPin.P15, 2, RGBPixelMode.RGB);
-		}
+    function initRGBLight() {
+        if (!lhRGBLight) {
+            lhRGBLight = RGBLight.create(DigitalPin.P15, 2, RGBPixelMode.RGB);
+        }
     }
-    
+
     /**
      * Set the color of the colored lights, after finished the setting please perform  the display of colored lights.
      */
     //% weight=86 blockId=setLightColor block="Set|%lightoffset|color to %rgb"
-    export function setPixelRGB(lightoffset: Lights, rgb: RGBColors)
-    {
+    export function setPixelRGB(lightoffset: Lights, rgb: RGBColors) {
         lhRGBLight.setPixelColor(lightoffset, rgb);
     }
     /**
      * Set RGB Color argument
      */
     //% weight=85 blockId=setLightColorArgs block="Set|%lightoffset|color to %rgb"
-    export function setPixelRGBArgs(lightoffset: Lights, rgb: number)
-    {
+    export function setPixelRGBArgs(lightoffset: Lights, rgb: number) {
         lhRGBLight.setPixelColor(lightoffset, rgb);
     }
 
@@ -260,35 +559,35 @@ namespace microbot {
     }
 
 
-	const APDS9960_I2C_ADDR = 0x39;
+    const APDS9960_I2C_ADDR = 0x39;
     const APDS9960_ID_1 = 0xA8;
     const APDS9960_ID_2 = 0x9C;
     /* APDS-9960 register addresses */
     const APDS9960_ENABLE = 0x80;
-    const APDS9960_ATIME  = 0x81;
-    const APDS9960_WTIME  = 0x83;
-    const APDS9960_AILTL  = 0x84;
-    const APDS9960_AILTH  = 0x85;
-    const APDS9960_AIHTL  = 0x86;
-    const APDS9960_AIHTH  = 0x87;
+    const APDS9960_ATIME = 0x81;
+    const APDS9960_WTIME = 0x83;
+    const APDS9960_AILTL = 0x84;
+    const APDS9960_AILTH = 0x85;
+    const APDS9960_AIHTL = 0x86;
+    const APDS9960_AIHTH = 0x87;
     const APDS9960_PILT = 0x89;
     const APDS9960_PIHT = 0x8B;
     const APDS9960_PERS = 0x8C;
     const APDS9960_CONFIG1 = 0x8D;
-    const APDS9960_PPULSE  = 0x8E;
+    const APDS9960_PPULSE = 0x8E;
     const APDS9960_CONTROL = 0x8F;
     const APDS9960_CONFIG2 = 0x90;
     const APDS9960_ID = 0x92;
-    const APDS9960_STATUS  = 0x93;
-    const APDS9960_CDATAL  = 0x94;
-    const APDS9960_CDATAH  = 0x95;
-    const APDS9960_RDATAL  = 0x96;
-    const APDS9960_RDATAH  = 0x97;
-    const APDS9960_GDATAL  = 0x98;
-    const APDS9960_GDATAH  = 0x99;
-    const APDS9960_BDATAL  = 0x9A;
-    const APDS9960_BDATAH  = 0x9B;
-    const APDS9960_PDATA   = 0x9C;
+    const APDS9960_STATUS = 0x93;
+    const APDS9960_CDATAL = 0x94;
+    const APDS9960_CDATAH = 0x95;
+    const APDS9960_RDATAL = 0x96;
+    const APDS9960_RDATAH = 0x97;
+    const APDS9960_GDATAL = 0x98;
+    const APDS9960_GDATAH = 0x99;
+    const APDS9960_BDATAL = 0x9A;
+    const APDS9960_BDATAH = 0x9B;
+    const APDS9960_PDATA = 0x9C;
     const APDS9960_POFFSET_UR = 0x9D;
     const APDS9960_POFFSET_DL = 0x9E;
     const APDS9960_CONFIG3 = 0x9F;
@@ -305,7 +604,7 @@ namespace microbot {
     const AGAIN_4X = 1;
     const AGAIN_16X = 2;
     const AGAIN_64X = 3;
-    
+
     /* Default values */
     const DEFAULT_ATIME = 219;    // 103ms
     const DEFAULT_WTIME = 246;    // 27ms
@@ -330,7 +629,7 @@ namespace microbot {
     const DEFAULT_GIEN = 0;       // Disable gesture interrupts
     const DEFAULT_LDRIVE = LED_DRIVE_100MA;
     const DEFAULT_AGAIN = AGAIN_4X;
-    
+
     const OFF = 0;
     const ON = 1;
     const POWER = 0;
@@ -344,25 +643,25 @@ namespace microbot {
 
 
     function i2cwrite(reg: number, value: number) {
-       let buf = pins.createBuffer(2);
-       buf[0] = reg;
-       buf[1] = value;
-       pins.i2cWriteBuffer(APDS9960_I2C_ADDR, buf);
+        let buf = pins.createBuffer(2);
+        buf[0] = reg;
+        buf[1] = value;
+        pins.i2cWriteBuffer(APDS9960_I2C_ADDR, buf);
     }
 
-     function i2cread(reg: number): number {
-		pins.i2cWriteNumber(APDS9960_I2C_ADDR, reg, NumberFormat.UInt8BE);
+    function i2cread(reg: number): number {
+        pins.i2cWriteNumber(APDS9960_I2C_ADDR, reg, NumberFormat.UInt8BE);
         let val = pins.i2cReadNumber(APDS9960_I2C_ADDR, NumberFormat.UInt8BE);
         return val;
     }
 
-     function InitColor(): boolean {
-         let id = i2cread(APDS9960_ID);
+    function InitColor(): boolean {
+        let id = i2cread(APDS9960_ID);
         //  serial.writeLine("id:")
         //  serial.writeNumber(id); 
         if (!(id == APDS9960_ID_1 || id == APDS9960_ID_2)) {
             return false;
-         }
+        }
         //  serial.writeLine("set mode:")
         setMode(ALL, OFF);
         i2cwrite(APDS9960_ATIME, DEFAULT_ATIME);
@@ -370,7 +669,7 @@ namespace microbot {
         i2cwrite(APDS9960_PPULSE, DEFAULT_PROX_PPULSE);
         i2cwrite(APDS9960_POFFSET_UR, DEFAULT_POFFSET_UR);
         i2cwrite(APDS9960_POFFSET_DL, DEFAULT_POFFSET_DL);
-         i2cwrite(APDS9960_CONFIG1, DEFAULT_CONFIG1);
+        i2cwrite(APDS9960_CONFIG1, DEFAULT_CONFIG1);
         setLEDDrive(DEFAULT_LDRIVE);
         setAmbientLightGain(DEFAULT_AGAIN);
         setLightIntLowThreshold(DEFAULT_AILT);
@@ -378,106 +677,96 @@ namespace microbot {
         i2cwrite(APDS9960_PERS, DEFAULT_PERS);
         i2cwrite(APDS9960_CONFIG2, DEFAULT_CONFIG2);
         i2cwrite(APDS9960_CONFIG3, DEFAULT_CONFIG3);
-        return true;  
+        return true;
     }
-        
-     function setMode(mode: number, enable: number) {
-         let reg_val = getMode();
-         serial.writeLine("mode:");
-         serial.writeNumber(reg_val);
-            /* Change bit(s) in ENABLE register */
-        enable = enable & 0x01;
-         if (mode >= 0 && mode <= 6)
-         {
-             if (enable > 0)
-             {
-                reg_val |= (1 << mode);
-             }
-             else
-             {
-                //reg_val &= ~(1 << mode);
-                 reg_val &= (0xff-(1 << mode)); 
-             }
-        }
-         else if(mode == ALL)
-         {
-             if (enable > 0)
-             {
-                reg_val = 0x7F;
-             }
-             else
-             {
-                reg_val = 0x00;
-             }
-        }
-        i2cwrite(APDS9960_ENABLE,reg_val);
-    }
-    
-     function getMode(): number {
-            let enable_value = i2cread(APDS9960_ENABLE);
-            return enable_value;
-        }
 
-     function setLEDDrive(drive: number) {
-        let val = i2cread(APDS9960_CONTROL);
-            /* Set bits in register to given value */
-         drive &= 0b00000011;
-         drive = drive << 6;
-         val &= 0b00111111;
-         val |= drive;
-         i2cwrite(APDS9960_CONTROL,val);
+    function setMode(mode: number, enable: number) {
+        let reg_val = getMode();
+        /* Change bit(s) in ENABLE register */
+        enable = enable & 0x01;
+        if (mode >= 0 && mode <= 6) {
+            if (enable > 0) {
+                reg_val |= (1 << mode);
+            }
+            else {
+                //reg_val &= ~(1 << mode);
+                reg_val &= (0xff - (1 << mode));
+            }
+        }
+        else if (mode == ALL) {
+            if (enable > 0) {
+                reg_val = 0x7F;
+            }
+            else {
+                reg_val = 0x00;
+            }
+        }
+        i2cwrite(APDS9960_ENABLE, reg_val);
     }
-    
-     function setLightIntLowThreshold(threshold: number) {
+
+    function getMode(): number {
+        let enable_value = i2cread(APDS9960_ENABLE);
+        return enable_value;
+    }
+
+    function setLEDDrive(drive: number) {
+        let val = i2cread(APDS9960_CONTROL);
+        /* Set bits in register to given value */
+        drive &= 0b00000011;
+        drive = drive << 6;
+        val &= 0b00111111;
+        val |= drive;
+        i2cwrite(APDS9960_CONTROL, val);
+    }
+
+    function setLightIntLowThreshold(threshold: number) {
         let val_low = threshold & 0x00FF;
         let val_high = (threshold & 0xFF00) >> 8;
         i2cwrite(APDS9960_AILTL, val_low);
-        i2cwrite(APDS9960_AILTH,val_high);
+        i2cwrite(APDS9960_AILTH, val_high);
     }
 
-     function setLightIntHighThreshold(threshold: number) {
+    function setLightIntHighThreshold(threshold: number) {
         let val_low = threshold & 0x00FF;
         let val_high = (threshold & 0xFF00) >> 8;
         i2cwrite(APDS9960_AIHTL, val_low);
         i2cwrite(APDS9960_AIHTH, val_high);
     }
 
-     function enableLightSensor(interrupts: boolean) {
+    function enableLightSensor(interrupts: boolean) {
         setAmbientLightGain(DEFAULT_AGAIN);
-        if (interrupts)
-        {
+        if (interrupts) {
             setAmbientLightIntEnable(1);
-        }   
-        else
-        {
+        }
+        else {
             setAmbientLightIntEnable(0);
         }
         enablePower();
-        setMode(AMBIENT_LIGHT,1);
+        setMode(AMBIENT_LIGHT, 1);
     }
 
-     function setAmbientLightGain(drive: number) {
+    function setAmbientLightGain(drive: number) {
         let val = i2cread(APDS9960_CONTROL);
-            /* Set bits in register to given value */
+        /* Set bits in register to given value */
         drive &= 0b00000011;
         val &= 0b11111100;
         val |= drive;
-        i2cwrite(APDS9960_CONTROL,val);
+        i2cwrite(APDS9960_CONTROL, val);
     }
 
-     function getAmbientLightGain(): number {
+    function getAmbientLightGain(): number {
         let val = i2cread(APDS9960_CONTROL);
         val &= 0b00000011;
         return val;
     }
 
-     function enablePower() {
-        setMode(POWER,1);
+    function enablePower() {
+        setMode(POWER, 1);
     }
 
-     function setAmbientLightIntEnable(enable: number) {
+    function setAmbientLightIntEnable(enable: number) {
         let val = i2cread(APDS9960_ENABLE);
-            /* Set bits in register to given value */
+        /* Set bits in register to given value */
         enable &= 0b00000001;
         enable = enable << 4;
         val &= 0b11101111;
@@ -485,16 +774,16 @@ namespace microbot {
         i2cwrite(APDS9960_ENABLE, val);
     }
 
-     function readAmbientLight(): number {
+    function readAmbientLight(): number {
         let val_byte = i2cread(APDS9960_CDATAL);
         let val = val_byte;
         val_byte = i2cread(APDS9960_CDATAH);
         val = val + val_byte << 8;
         return val;
     }
-    
-     function readRedLight(): number {
-     
+
+    function readRedLight(): number {
+
         let val_byte = i2cread(APDS9960_RDATAL);
         let val = val_byte;
         val_byte = i2cread(APDS9960_RDATAH);
@@ -502,75 +791,74 @@ namespace microbot {
         return val;
     }
 
-     function readGreenLight(): number {
-        
-           let val_byte = i2cread(APDS9960_GDATAL);
-           let val = val_byte;
-           val_byte = i2cread(APDS9960_GDATAH);
-           val = val + val_byte << 8;
-           return val;
+    function readGreenLight(): number {
+
+        let val_byte = i2cread(APDS9960_GDATAL);
+        let val = val_byte;
+        val_byte = i2cread(APDS9960_GDATAH);
+        val = val + val_byte << 8;
+        return val;
     }
-    
-     function readBlueLight(): number {
-        
-           let val_byte = i2cread(APDS9960_BDATAL);
-           let val = val_byte;
-           val_byte = i2cread(APDS9960_BDATAH);
-           val = val + val_byte << 8;
-           return val;
-       }
+
+    function readBlueLight(): number {
+
+        let val_byte = i2cread(APDS9960_BDATAL);
+        let val = val_byte;
+        val_byte = i2cread(APDS9960_BDATAH);
+        val = val + val_byte << 8;
+        return val;
+    }
 
 	/**
 	 * Init Color Sensor
 	 */
-	export function initColorSensor() {
+    export function initColorSensor() {
         InitColor();
-		enableLightSensor(false);
-		control.waitMicros(500);
-	}
+        enableLightSensor(false);
+    }
 
 	/**
 	 * Color sensor white calibration, each time you turn on the first use of the color sensor the white must be corrected at first.
 	 */
-	//% weight=78 blockId=adjustWhite block="Adjust white color"
-	export function adjustWhite() {
-		R_F = readRedLight();
-		G_F = readGreenLight();
-		B_F = readBlueLight();
+    //% weight=78 blockId=adjustWhite block="Adjust white color"
+    export function adjustWhite() {
+        R_F = readRedLight();
+        G_F = readGreenLight();
+        B_F = readBlueLight();
 
-    	//Measure twice, and then calculate their average.
-    	R_F =  (readRedLight() + R_F) / 2;
-   	 	G_F = (readGreenLight() + G_F) / 2;
-    	B_F = (readBlueLight() + B_F) / 2 ;
+        //Measure twice, and then calculate their average.
+        R_F = (readRedLight() + R_F) / 2;
+        G_F = (readGreenLight() + G_F) / 2;
+        B_F = (readBlueLight() + B_F) / 2;
 
-	}
+    }
 
 
 	/**
 	 * Color sensor black calibration, each time you turn on the first use of the color sensor the white must be adjusted at first then adjust black.
 	 */
-	//% weight=76 blockId=adjustBlack block="Adjust black color"
-	export function adjustBlack() {
-		r_f = readRedLight();
-		g_f = readGreenLight();
-		b_f = readBlueLight();
+    //% weight=76 blockId=adjustBlack block="Adjust black color"
+    export function adjustBlack() {
+        r_f = readRedLight();
+        g_f = readGreenLight();
+        b_f = readBlueLight();
 
-		//Measure twice, and then calculate their average.
-		r_f = (readRedLight() + r_f) / 2;
-		g_f = (readGreenLight() + g_f) / 2;
-		b_f = (readBlueLight() + b_f) / 2;
-	}
+        //Measure twice, and then calculate their average.
+        r_f = (readRedLight() + r_f) / 2;
+        g_f = (readGreenLight() + g_f) / 2;
+        b_f = (readBlueLight() + b_f) / 2;
+    }
 
 	/**
 	 *  Color sensor to obtain color value, white and black must be corrected before execution.
 	 */
-	//% weight=74 blockGap=50 blockId=checkColor block="Current color %color"
-	export function checkCurrentColor(color: Colors): boolean {
-		let r = readRedLight();
-		let g = readGreenLight();
-		let b = readBlueLight();
+    //% weight=74 blockGap=50 blockId=checkColor block="Current color %color"
+    export function checkCurrentColor(color: Colors): boolean {
+        let r = readRedLight();
+        let g = readGreenLight();
+        let b = readBlueLight();
         let t = Colors.Red;
-        
+
         // serial.writeLine("rgb:");
         // serial.writeNumber(r);
         // serial.writeLine(" ");
@@ -578,16 +866,15 @@ namespace microbot {
         // serial.writeLine(" ");
         // serial.writeNumber(b);
 
-        if (r < r_f || r > R_F || g < g_f || g > G_F || b < b_f || b > B_F)
-        {
-           // serial.writeLine("none1");
-            return false; 
-        }       
+        if (r < r_f || r > R_F || g < g_f || g > G_F || b < b_f || b > B_F) {
+            // serial.writeLine("none1");
+            return false;
+        }
 
-		r = mapRGB(r, r_f, R_F, 0, 255);
-		g = mapRGB(g, g_f, G_F, 0, 255);
+        r = mapRGB(r, r_f, R_F, 0, 255);
+        g = mapRGB(g, g_f, G_F, 0, 255);
         b = mapRGB(b, b_f, B_F, 0, 255);
-        
+
         // serial.writeLine("rgb:");
         // serial.writeNumber(r);
         // serial.writeLine(" ");
@@ -595,135 +882,114 @@ namespace microbot {
         // serial.writeLine(" ");
         // serial.writeNumber(b);
         // serial.writeLine(" ");
-		if (r > g)
-		{
-			t = Colors.Red;
-		}	
-		else
-		{
-			t = Colors.Green;
-		}	
+        if (r > g) {
+            t = Colors.Red;
+        }
+        else {
+            t = Colors.Green;
+        }
 
-		if (t == Colors.Green && g < b)
-		{
-			t = Colors.Blue;
-		}	
-		if (t == Colors.Red && r < b)
-		{
-			t = Colors.Blue;
-		}
+        if (t == Colors.Green && g < b) {
+            t = Colors.Blue;
+        }
+        if (t == Colors.Red && r < b) {
+            t = Colors.Blue;
+        }
 
-		if (t == Colors.Blue && b > 50) {
-           // serial.writeLine("blue");
-		}
-		else if (t == Colors.Green && g > 50) {
-           // serial.writeLine("green");
-		}
-		else if (t == Colors.Red && r > 50) {
-			//serial.writeLine("red");
-		}
-		else
-        {
+        if (t == Colors.Blue && b > 50) {
+            // serial.writeLine("blue");
+        }
+        else if (t == Colors.Green && g > 50) {
+            // serial.writeLine("green");
+        }
+        else if (t == Colors.Red && r > 50) {
+            //serial.writeLine("red");
+        }
+        else {
             //serial.writeLine("none");
             return false;
-        }		
+        }
         return (color == t);
-	}
-
-	function mapRGB(x: number, in_min: number, in_max: number, out_min: number, out_max: number): number {
-		return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
-    
+
+    function mapRGB(x: number, in_min: number, in_max: number, out_min: number, out_max: number): number {
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
+
     /**
      * Resolve the Bluetooth that phone APP send command type, the total of nine types of commands: tank display command, servo debug command, obtaining the distance of ultrasonic command, obtaining temperature command, obtain sound size rank orders, to obtain the light level command, set the color lights command, honking command, firmware version information command.
      */
     //% weight=72 blockId=analyzeBluetoothCmd block="Get bluetooth command type %str"
     export function analyzeBluetoothCmd(str: string): number {
-        if (str.length > 9)
-        {
+        if (str.length > 9) {
             let cmdHead = str.substr(0, 3);
-            
-            if (cmdHead == "CMD")
-            {
+
+            if (cmdHead == "CMD") {
                 let cmdTypeStr: string = str.substr(4, 2);
-                if (!checkArgsInt(cmdTypeStr))
-                {
+                if (!checkArgsInt(cmdTypeStr)) {
                     return CmdType.NO_COMMAND;
-                }    
+                }
                 let cmdType = parseInt(cmdTypeStr);
 
-                if (cmdType > CmdType.VERSION || cmdType < 0)
-                {
-                    return CmdType.NO_COMMAND; 
-                } 
-                else
-                {
+                if (cmdType > CmdType.VERSION || cmdType < 0) {
+                    return CmdType.NO_COMMAND;
+                }
+                else {
                     return cmdType;
-                }    
+                }
             }
-            else
-            {
-                return CmdType.NO_COMMAND; 
-            }    
-        }   
-        else
-        {
+            else {
+                return CmdType.NO_COMMAND;
+            }
+        }
+        else {
             return CmdType.NO_COMMAND;
-        }    
+        }
     }
 
     function checkArgsInt(str: string): boolean {
         let i = 0;
-        for (; i < str.length; i++)
-        {
-            if (str.charAt(i) < '0' || str.charAt(i) > '9')
-            {
+        for (; i < str.length; i++) {
+            if (str.charAt(i) < '0' || str.charAt(i) > '9') {
                 return false;
-            }    
+            }
         }
         return true;
     }
 
     /**
-     * Resolve the parameters tha the phone APP send the command,there are 3 parameters of servo debug command,the other command has just one parameter.
+     * Resolve the parameters that the phone APP send the command,there are 3 parameters of servo debug command,the other command has just one parameter.
      */
     //% weight=70  blockId=getArgs block="Get bluetooth command|%str|argument at %index"
     //% index.min=1 index.max=3
-    export function getArgs(str: string,index: number): number {
+    export function getArgs(str: string, index: number): number {
         let cmdType = analyzeBluetoothCmd(str);
-        if (cmdType == CmdType.NO_COMMAND)
-        {
+        if (cmdType == CmdType.NO_COMMAND) {
             return CarRunCmdType.COMMAND_ERRO;
         }
         else {
             let dataIndex = 7;
             let subLegth = 2;
-            if (index == 2)
-            {
+            if (index == 2) {
                 dataIndex = 10;
                 subLegth = 4;
             }
-            else if (index == 3)
-            {
+            else if (index == 3) {
                 dataIndex = 15;
                 subLegth = 4;
-            } 
-            if (cmdType == CmdType.SERVO)
-            {
-                if (str.length < 19)
-                {
-                    return CmdType.NO_COMMAND;
-                }    
             }
-            if ((index == 1 && str.length < 10)||(index == 2 && str.length < 15)||(index == 3 && str.length < 19))
-            {
+            if (cmdType == CmdType.SERVO) {
+                if (str.length < 19) {
+                    return CmdType.NO_COMMAND;
+                }
+            }
+            if ((index == 1 && str.length < 10) || (index == 2 && str.length < 15) || (index == 3 && str.length < 19)) {
                 return 0;
-            }    
+            }
             let strArgs = str.substr(dataIndex, subLegth);
-            if (!checkArgsInt(strArgs))
-            {
+            if (!checkArgsInt(strArgs)) {
                 return 0;
-            }    
+            }
             let arg = parseInt(strArgs);
             return arg;
         }
@@ -732,8 +998,8 @@ namespace microbot {
     /**
      * Returns the enumeration of the command type, which can be compared with this module after obtaining the bluetooth command type sent by the mobile phone APP.
      */
-    //% weight=68 blockId=getCmdtype block="Bluetooth command type %type"
-    export function getCmdtype(type: CmdType): number {
+    //% weight=68 blockId=getBluetoothCmdtype block="Bluetooth command type %type"
+    export function getBluetoothCmdtype(type: CmdType): number {
         return type;
     }
 
@@ -784,5 +1050,164 @@ namespace microbot {
     //% weight=58 blockId=littleStarMelody block="Little star melody"
     export function littleStarMelody(): string[] {
         return ["C4:4", "C4:4", "G4:4", "G4:4", "A4:4", "A4:4", "G4:4", "F4:4", "F4:4", "E4:4", "E4:4", "D4:4", "D4:4", "C4:4", "G4:4", "G4:4", "F4:4", "F4:4", "E4:4", "E4:4", "D4:4", "G4:4", "G4:4", "F4:4", "F4:4", "E4:4", "E4:4", "D4:4", "C4:4", "C4:4", "G4:4", "G4:4", "A4:4", "A4:4", "G4:4", "F4:4", "F4:4", "E4:4", "E4:4", "D4:4", "D4:4", "C4:4"];
+    }
+
+
+    export enum SendType {
+        //% block="Set immediately"
+        NoDelaySend = 0x00,
+        //% block="Set delay"
+        DelaySend = 0x01
+    }
+
+    //* Other packets ripped from PyLX16A
+    //Start moving now
+    //def moveTimeWrite(self, angle, time = 0):
+    //packet = [0x55, 0x55, self.ID, 7, 1, *LX16A.toBytes(angle), *LX16A.toBytes(time)]
+    //
+    //Wait for start
+    //def moveTimeWaitWrite(self, angle, time = 0):
+    //packet = [0x55, 0x55, self.ID, 7, 7, *LX16A.toBytes(angle), *LX16A.toBytes(time)]
+    //
+    //Start now
+    //def moveStart(self):
+    //packet = [0x55, 0x55, self.ID, 3, 11]
+    //
+    //Stop moving
+    //def moveStop(self):
+    //packet = [0x55, 0x55, self.ID, 3, 12]
+    //
+    //Set new ID
+    //def IDWrite(self, ID):
+    //packet = [0x55, 0x55, self.ID, 4, 13, ID]
+    //
+    //# Permanently sets a restriction on the rotation
+    //# angle.If the current angle is outside of the bounds,
+    //# nothing will change.But once the angle enters the legal range,
+    //# it will not be allowed to exceed the limits until they are extended
+    //
+    //# After restrictions are applied, the angles will not scale
+    //# For example, if the bounds are set to [120, 240], the angle 0
+    //# does not mean a rotation of halfway
+    //
+    //# The lower bound must always be less than the upper bound
+    //# The default angle limits are 0 and 240
+    //# Possible lower values (in degrees): [0, 240], int
+    //# Possible upper values (in degrees): [0, 240], int
+    //def angleLimitWrite(self, lower, upper):
+    //lower = int(lower * 25 / 6)
+    //upper = int(upper * 25 / 6)
+    //packet = [0x55, 0x55, self.ID, 7, 20, *LX16A.toBytes(lower), *LX16A.toBytes(upper)]
+    //
+    //# Sets the lower and upper bounds on the input voltage
+    //
+    //# If the input voltage exceeds these bounds, the LED
+    //# on the servo will flash and the servo will not rotate
+    //
+    //# Possible lower values (in millivolts): [4500, 12000], int
+    //# Possible higher values (in millivolts): [4500, 12000], int
+    //def vInLimitWrite(self, lower, upper):
+    //packet = [0x55, 0x55, self.ID, 7, 22, *LX16A.toBytes(lower), *LX16A.toBytes(upper)]
+    //
+    //# Sets the maximum internal temperature
+    //
+    //# If the servo temperature exceeds the limit, the LED
+    //# on the servo will flash and the servo will not rotate
+    //
+    //# Default maximum temperature is 85 degrees
+    //# Possible temperature values (in degrees celcius): [50, 100], int
+    //def tempMaxLimitWrite(self, temp):
+    //packet = [0x55, 0x55, self.ID, 4, 24, temp]
+    //
+    //# Controls the power state of the servo
+    //
+    //# In the power down state, the servo consumes
+    //# less power, but will also not respond to commands
+    //# It will respond once powered on
+    //
+    //# Possible power values:
+    //# 0 for power down, 1 for power on
+    //
+    //def loadOrUnloadWrite(self, power):
+    //packet = [0x55, 0x55, self.ID, 4, 31, power]
+    //
+    //Move Start for all Servos
+    //def moveStartAll():
+    //packet = [0x55, 0x55, 254, 3, 11]
+    //
+    //Stop all servos
+    //def moveStopAll():
+    //packet = [0x55, 0x55, 254, 3, 12]
+    //
+    //Move multiple servos at the same time
+    //def moveTimeWriteList(servos, data):
+    //
+    //Hey Fred, What's your name?
+    //def IDRead(self):
+    //packet = [0x55, 0x55, self.ID, 3, 14]
+    //Look in byte number 5 of 7
+    //
+    //# Returns the internal temperature of the servo, in degrees celcius
+    //
+    //def tempRead(self):
+    //packet = [0x55, 0x55, self.ID, 3, 26]
+    //LX16A.sendPacket(packet)
+    //returned = []
+    //for i in range(7):
+    //    returned.append(LX16A.controller.read())
+    //returned = [int.from_bytes(b, byteorder = "little") for b in returned]
+    //LX16A.checkPacket(returned)
+    //return returned[5]
+    //
+    //# Returns the input voltage of the servo, in millivolts
+    //def vInRead(self):
+    //packet = [0x55, 0x55, self.ID, 3, 27]
+    //LX16A.sendPacket(packet)
+    //returned = []
+    //for i in range(8):
+    //    returned.append(LX16A.controller.read())
+    //returned = [int.from_bytes(b, byteorder = "little") for b in returned]
+    //LX16A.checkPacket(returned)
+    //return returned[6] * 256 + returned[5]
+    //
+    //# Returns the physical position of the servo
+    //
+    //# Note that the position is relative to the angle offset
+    //# So if you set the angle offset to - 125
+    //# and then set the position to 0 (using servo.moveTimeWrite, for example),
+    //# it will still read as being in position 0
+    //
+    //def getPhysicalPos(self):
+    //packet = [0x55, 0x55, self.ID, 3, 28]
+    //LX16A.sendPacket(packet)
+    //returned = []
+    //for i in range(8):
+    //    returned.append(LX16A.controller.read())
+    //returned = [int.from_bytes(b, byteorder = "little") for b in returned]
+    //LX16A.checkPacket(returned)
+    //pos = returned[6] * 256 + returned[5]
+    //pos = int(pos * 6 / 25)
+    //return pos
+    //
+    //
+
+    /**
+    * Read the angle of servo 1 to 32, range of 0~240 degree
+    */
+    //% weight=98 blockId=getServo block="Get servo position|index %index"
+    //% index.min=1 index.max=32
+    export function getPosition(id: number): number {
+        let outbuf = pins.createBuffer(5);
+        outbuf[0] = 0x55;
+        outbuf[1] = 0x55;
+        outbuf[2] = 0x03;
+        outbuf[3] = 0x35;//cmd type
+        outbuf[4] = 0x0A;
+        serial.writeBuffer(outbuf);
+        let inbuf = pins.createBuffer(7)
+        serial.readBuffer(5)
+        let angle: number = inbuf[6] * 256 + inbuf[5]
+        angle = Math.floor(angle * 6 / 25)
+        return angle
     }
 }

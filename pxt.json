@@ -1,5 +1,5 @@
 {
-    "name": "microbot",
+    "name": "microbot-rad",
     "version": "0.0.1",
     "description": "Extension for LewanSoul Microbot",
     "license": "MIT",
@@ -17,5 +17,6 @@
     "testFiles": [
         "test.ts"
     ],
-    "public": true
+    "public": true,
+    "installedVersion": "workspace:b0c38d61-3802-41a8-0ef4-334f1e3a7297"
 }
