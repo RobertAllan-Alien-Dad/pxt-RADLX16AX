@@ -166,6 +166,16 @@ namespace microbot {
         JOYSTICK2 = EventBusValue.MES_DPAD_BUTTON_C_DOWN
     }
 
+    export enum TargetValue {
+        //% block = "No Target"
+        NoTarget,
+        //% block = "Lewansoul Microbit Expansion Board"
+        ExpBoard,
+        //% block = "Lewansoul-Lobot LBSC v1.4 Servo Controller"
+        ServoControl
+    }
+
+    export let target: TargetValue = TargetValue.NoTarget
 
     export enum HandleSensorValue {
         //% block="Sound"
@@ -188,6 +198,16 @@ namespace microbot {
         KNOB
     }
 
+    export function initTarget(newTarget: TargetValue) {
+        if (target != newTarget) {
+            if (newTarget == TargetValue.ExpBoard) {
+                targetExpBoard()
+            }
+            if (newTarget == TargetValue.ServoControl) {
+                targetServoControl()
+            }
+        }
+    }
 
     let lhRGBLight: RGBLight.LHRGBLight;
     let R_F: number;
@@ -203,11 +223,12 @@ namespace microbot {
     let versionFlag: boolean = false;
     let readTimes = 0;
 
-	/**
-   * Microbot board initialization, please execute at boot time
-  */
-    //% weight=100 blockId=microbotInit block="Initialize Microbot"
-    export function microbotInit() {
+    /**
+    * Microbot board initialization, please execute at boot time
+    */
+    //% weight=100 blockId=tgtExpBoard block="Target Expansion Board"
+    export function targetExpBoard() {
+        target = TargetValue.ExpBoard
         initRGBLight();
         initColorSensor();
         serial.redirect(
@@ -224,6 +245,30 @@ namespace microbot {
         //    basic.pause(30)
         //}
     }
+
+    /**
+    * Microbot board initialization, please execute at boot time
+    */
+    //% weight=100 blockId=tgtSrvControl block="Target Servo Control"
+    export function targetServoControl() {
+        target = TargetValue.ServoControl
+        initRGBLight();
+        initColorSensor();
+        serial.redirect(
+            SerialPin.P1,
+            SerialPin.P16,
+            BaudRate.BaudRate115200);
+        //basic.forever(() => {
+        //    if (readTimes < 5 && !versionFlag)
+        //        getHandleCmd();
+        //});
+        //while (readTimes < 5 && !versionFlag) {
+        //    readTimes++;
+        //    sendVersionCmd();
+        //    basic.pause(30)
+        //}
+    }
+
 
     function sendVersionCmd() {
         let buf = pins.createBuffer(4);
@@ -291,6 +336,7 @@ namespace microbot {
     //% weight=97 blockId=setBusServo block="Set bus servo|index %index|angle %angle|duration %duration"
     //% angle.min=0 angle.max=240
     export function setBusServo(index: number, angle: number, duration: number) {
+        initTarget(TargetValue.ServoControl)
         if (angle > 240 || angle < 0) {
             return;
         }
@@ -308,6 +354,7 @@ namespace microbot {
         buf[8] = position & 0xff;
         buf[9] = (position >> 8) & 0xff;
         serial.writeBuffer(buf);
+        initTarget(TargetValue.ExpBoard)
     }
 
     /**
@@ -1197,6 +1244,7 @@ namespace microbot {
     //% weight=98 blockId=getServo block="Get servo position|index %index"
     //% index.min=1 index.max=32
     export function getPosition(id: number): number {
+        initTarget(TargetValue.ServoControl)
         let outbuf = pins.createBuffer(5);
         outbuf[0] = 0x55;
         outbuf[1] = 0x55;
@@ -1205,9 +1253,11 @@ namespace microbot {
         outbuf[4] = 0x0A;
         serial.writeBuffer(outbuf);
         let inbuf = pins.createBuffer(7)
-        serial.readBuffer(5)
-        let angle: number = inbuf[6] * 256 + inbuf[5]
+        serial.readBuffer(1)
+        let angle: number = 0
+        angle = inbuf[6] * 256 + inbuf[5]
         angle = Math.floor(angle * 6 / 25)
+        initTarget(TargetValue.ExpBoard)
         return angle
     }
 }
